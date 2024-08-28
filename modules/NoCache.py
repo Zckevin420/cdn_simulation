@@ -2,19 +2,18 @@ class NoCache:
     def access(self, filename):
         # print('No cache access:')
         # print('NoCache')
-        # print(f"[NoCache] Attempting to access {filename}, but caching is disabled.")
-        return False  # Always miss
+        return False
 
     def add(self, filename):
-        # print(f"[No]Adding {filename} to cache using strategy {type(self).__name__}")
+        # print(f"[no] add {filename}")
         return None
 
     def evict(self):
-        # print("[NoCache] No eviction necessary, caching is disabled.")
+        # print("[no] No evict")
         return None
 
     def remove(self, filename):
-        # print(f"[No]Remove {filename} to cache using strategy {type(self).__name__}")
+        # print(f"[no] remove {filename}")
         return None
 
     def cache_content(self):

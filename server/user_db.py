@@ -1,6 +1,7 @@
 import sqlite3
 
-def initialize_user_database(db_path): # 初始化用户数据库，创建用户表
+
+def initialize_user_database(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
@@ -14,7 +15,8 @@ def initialize_user_database(db_path): # 初始化用户数据库，创建用户
     conn.commit()
     conn.close()
 
-def add_user(db_path, username, x, y): # 向用户数据库添加用户记录（如果用户不存在）
+
+def add_user(db_path, username, x, y):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('INSERT OR IGNORE INTO users (username, x, y) VALUES (?, ?, ?)', (username, x, y))
@@ -22,7 +24,7 @@ def add_user(db_path, username, x, y): # 向用户数据库添加用户记录（
     conn.close()
 
 
-def get_user_position(db_path, username): # 根据用户名获取用户位置
+def get_user_position(db_path, username):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('SELECT x, y FROM users WHERE username = ?', (username,))

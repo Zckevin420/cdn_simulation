@@ -1,41 +1,38 @@
 from collections import OrderedDict
 
+
 class ARCCache:
     def __init__(self, max_files, server):
         self.max_files = max_files
-        self.t1 = OrderedDict()  # 最近被访问过但只访问一次的缓存
-        self.t2 = OrderedDict()  # 最近被频繁访问的缓存
-        self.b1 = OrderedDict()  # 从t1中移出的缓存（冷数据）
-        self.b2 = OrderedDict()  # 从t2中移出的缓存（热数据）
-        self.server = server  # 服务器实例，用于操作数据库
+        self.t1 = OrderedDict()  # files that recently be requested but not a lot
+        self.t2 = OrderedDict()  # files that usually & recently be requested
+        self.b1 = OrderedDict()  # remove from t1
+        self.b2 = OrderedDict()  # remove from t2
+        self.server = server
 
     def add(self, filename):
+        # if exist
         if filename in self.t1 or filename in self.t2:
-            # print(f"File {filename} is already in cache, skipping add.")
             return
 
+        # if full
         if len(self.t1) + len(self.t2) >= self.max_files:
-            # print(f"Cache full. Triggering eviction before adding {filename}.")
             self.evict()
 
-        # 检查文件是否已经存在于数据库中，避免重复插入
         if self._file_exists_in_db(filename):
-            # print(f"File {filename} is already in database, skipping add.")
             return
 
-        # 添加文件到缓存和数据库
+        # add file to the db
         self.t1[filename] = True
         cursor = self.server.conn.cursor()
         cursor.execute('INSERT INTO files (filename) VALUES (?)', (filename,))
         self.server.conn.commit()
-        # print(f"ADD {filename}. Current Cache: {list(self.t1.keys()) + list(self.t2.keys())}")
 
     def _file_exists_in_db(self, filename):
         cursor = self.server.conn.cursor()
         cursor.execute('SELECT COUNT(*) FROM files WHERE filename = ?', (filename,))
         result = cursor.fetchone()
         exists = result[0] > 0 if result else False
-        # print(f"Checking if {filename} exists in database: {exists}")
         return exists
 
     def evict(self):
@@ -45,7 +42,7 @@ class ARCCache:
             cursor = self.server.conn.cursor()
             cursor.execute('DELETE FROM files WHERE filename = ?', (evicted_file,))
             self.server.conn.commit()
-            # print(f"DELETE {evicted_file} from t1")
+            # print(f"arc del {evicted_file} from t1")
             return evicted_file
         elif self.t2:
             evicted_file, _ = self.t2.popitem(last=False)
@@ -53,12 +50,11 @@ class ARCCache:
             cursor = self.server.conn.cursor()
             cursor.execute('DELETE FROM files WHERE filename = ?', (evicted_file,))
             self.server.conn.commit()
-            # print(f"DELETE {evicted_file} from t2")
+            # print(f"arc del {evicted_file} from t2")
             return evicted_file
         return None
 
     def remove(self, filename):
-        """从缓存中移除文件"""
         if filename in self.t1:
             del self.t1[filename]
         elif filename in self.t2:
@@ -85,5 +81,4 @@ class ARCCache:
         return False
 
     def cache_content(self):
-        """返回当前缓存内容的列表形式"""
         return list(self.t1.keys()) + list(self.t2.keys())

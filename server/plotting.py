@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 
+
 def plot_positions(user_positions, server_positions, user_server_connections, filename="positions.png"):
-    """绘制用户和服务器的位置图，并绘制用户与选择服务器之间的连线，最后保存为图片"""
+    # Mapping the location of users and servers
     # for idx, (user_pos, server_idx) in enumerate(user_server_connections):
     #     print(f"User {idx + 1} at {user_pos} is connected to Server {server_idx + 1} at {server_positions[server_idx]}")
 
@@ -10,7 +11,6 @@ def plot_positions(user_positions, server_positions, user_server_connections, fi
 
     plt.figure(figsize=(10, 8))
 
-    # 绘制用户与其对应的服务器之间的连线
     for user_pos, server_index in user_server_connections:
         server_pos = server_positions[server_index]
         plt.plot([user_pos[0], server_pos[0]], [user_pos[1], server_pos[1]], color='gray', linewidth=0.5)
@@ -27,5 +27,3 @@ def plot_positions(user_positions, server_positions, user_server_connections, fi
     plt.grid(True)
     plt.savefig(filename)
     plt.close()
-
-
